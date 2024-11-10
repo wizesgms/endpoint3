@@ -149,7 +149,7 @@ class ApiController extends Controller
             ], 200);
         }
 
-        $balance = json_decode($this->api_balance($data['user_code']));
+        $balance = $this->api_balance($data['user_code']);
         $data = $balance->data;
 
         DB::table('users')->where('userCode', $data['MemberName'])->update([
@@ -218,7 +218,7 @@ class ApiController extends Controller
             'balance' => $player_balance,
         ]);
 
-        $this->api_transaksi($data['user_code'],$data['amount'],'deposit');
+        $this->api_transaksi($data['user_code'], $data['amount'], 'deposit');
 
         return response()->json([
             'status' => 1,
@@ -266,7 +266,7 @@ class ApiController extends Controller
             'balance' => $player_balance,
         ]);
 
-        $this->api_transaksi($data['user_code'],$data['amount'],'withdraw');
+        $this->api_transaksi($data['user_code'], $data['amount'], 'withdraw');
 
         return response()->json([
             'status' => 1,
@@ -372,7 +372,7 @@ class ApiController extends Controller
         }
 
 
-        $result = json_decode($this->api_launch($data['user_code'],$data['game_code'],$data['provider_code']));
+        $result = $this->api_launch($data['user_code'], $data['game_code'], $data['provider_code']);
 
         if ($result->status == 'success') {
             return response()->json([
@@ -429,14 +429,14 @@ class ApiController extends Controller
         return $this->curl_get($url);
     }
 
-    function api_transaksi($username,$amount,$type)
+    function api_transaksi($username, $amount, $type)
     {
         $txid = $this->generateRandomString();
         $url = "https://api.88xgames.com/v2/MakeTransfer.aspx?agent_token=c3b52b25c5f6d7f036fb636816813506&agent_code=xwgv59Xj&username={$username}&amount={$amount}&type={$type}&txid={$txid}";
         return $this->curl_get($url);
     }
 
-    function api_launch($username,$game_code,$game_provider)
+    function api_launch($username, $game_code, $game_provider)
     {
         $url = "https://api.88xgames.com/v2/LaunchGame.aspx?agent_token=c3b52b25c5f6d7f036fb636816813506&agent_code=xwgv59Xj&username={$username}&game_type=SeamlessGame&game_code={$game_code}&game_provider={$game_provider}&lang=en";
         return $this->curl_get($url);
@@ -445,21 +445,28 @@ class ApiController extends Controller
 
     function curl_get($endpoint)
     {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.47 Safari/537.36');
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_URL, $endpoint);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
-        $output = curl_exec($ch);
-        curl_close($ch);
-        return json_decode($output, true);
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $endpoint,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+        ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        return json_decode($response, true);
     }
 
-    function generateRandomString($length = 10) {
+    function generateRandomString($length = 10)
+    {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $charactersLength = strlen($characters);
         $randomString = '';
@@ -470,5 +477,4 @@ class ApiController extends Controller
 
         return $randomString;
     }
-
 }
