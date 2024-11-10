@@ -153,7 +153,7 @@ class ApiController extends Controller
         $data = $balance->data;
 
         DB::table('users')->where('userCode', $data['MemberName'])->update([
-            'balance' => $data->balance,
+            'balance' => $data['balance'],
         ]);
 
         $player = DB::table('users')->where('userCode', $data['user_code'])->where('agentCode', $data['agent_code'])->first();
@@ -462,7 +462,7 @@ class ApiController extends Controller
         $response = curl_exec($curl);
 
         curl_close($curl);
-        return json_decode($response);
+        return json_decode($response, true);
     }
 
     function generateRandomString($length = 10)
