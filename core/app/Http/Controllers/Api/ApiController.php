@@ -377,7 +377,7 @@ class ApiController extends Controller
         if ($result->status == 'success') {
 
             $id = str_replace("https://playgame.88xgames.com/open.aspx?gogame=","",$result->gameUrl);
-            $url = url('/').'gs2c/gameLaunch?'.$id;
+            $url = url('/').'/gs2c/gameLaunch?cid='.$id;
 
             return response()->json([
                 'status' => 1,
