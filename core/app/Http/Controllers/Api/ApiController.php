@@ -150,10 +150,10 @@ class ApiController extends Controller
         }
 
         $balance = $this->api_balance($data['user_code']);
-        $datas = $balance['data'];
+        $datas = $balance->data;
 
         DB::table('users')->where('userCode', $data['user_code'])->update([
-            'balance' => $datas['balance'],
+            'balance' => $datas->balance,
         ]);
 
         $player = DB::table('users')->where('userCode', $data['user_code'])->where('agentCode', $data['agent_code'])->first();
