@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>Pirate Gold Deluxe</title>
+    <title>Isomatslot Game</title>
     <style type="text/css">
         html,
         body,
