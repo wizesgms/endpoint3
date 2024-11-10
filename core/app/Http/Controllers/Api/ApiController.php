@@ -149,7 +149,7 @@ class ApiController extends Controller
             ], 200);
         }
 
-        $balance = $this->api_balance($data['user_code']);
+        $balance = json_decode($this->api_balance($data['user_code']));
         $data = $balance->data;
 
         DB::table('users')->where('userCode', $data['MemberName'])->update([
@@ -372,9 +372,7 @@ class ApiController extends Controller
         }
 
 
-        $result = $this->api_launch($data['user_code'],$data['game_code'],$data['provider_code']);
-
-        return $result;
+        $result = json_decode($this->api_launch($data['user_code'],$data['game_code'],$data['provider_code']));
 
         if ($result->status == 'success') {
             return response()->json([
