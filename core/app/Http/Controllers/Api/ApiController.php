@@ -374,6 +374,8 @@ class ApiController extends Controller
 
         $result = $this->api_launch($data['user_code'],$data['game_code'],$data['provider_code']);
 
+        return $result;
+
         if ($result->status == 'success') {
             return response()->json([
                 'status' => 1,
