@@ -472,7 +472,7 @@ class ApiController extends Controller
     public function iframe(Request $request)
     {
         $url = "https://playgame.88xgames.com/open.aspx?gogame={$request->cid}";
-        return $url;
+        return view('iframe',compact('url'));
     }
 
     function generateRandomString($length = 10)
