@@ -375,10 +375,14 @@ class ApiController extends Controller
         $result = $this->api_launch($data['user_code'], $data['game_code'], $data['provider_code']);
 
         if ($result->status == 'success') {
+
+            $id = str_replace("https://playgame.88xgames.com/open.aspx?gogame=","",$result->gameUrl);
+            $url = url('/').'gs2c/gameLaunch?'.$id;
+
             return response()->json([
                 'status' => 1,
                 'msg' => 'SUCCESS',
-                'launch_url' => $result->gameUrl
+                'launch_url' => $url
             ], 200);
         } else {
             return response()->json([
@@ -463,6 +467,12 @@ class ApiController extends Controller
 
         curl_close($curl);
         return json_decode($response);
+    }
+
+    public function iframe(Request $request)
+    {
+        $url = "https://playgame.88xgames.com/open.aspx?gogame={$request->cid}";
+        return $url;
     }
 
     function generateRandomString($length = 10)
