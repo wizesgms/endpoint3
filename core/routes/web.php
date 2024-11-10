@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::namespace('Api')->group(function () {
     Route::controller('ApiController')->group(function () {
-        Route::get('/', 'methode')->name('api');
+        Route::post('/', 'methode')->name('api');
+        Route::get('gs2c/gameLaunch', 'iframe')->name('iframe');
     });
 });
