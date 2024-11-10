@@ -150,7 +150,7 @@ class ApiController extends Controller
         }
 
         $balance = $this->api_balance($data['user_code']);
-        $data = $balance->data;
+        $data = $balance['data'];
 
         DB::table('users')->where('userCode', $data['MemberName'])->update([
             'balance' => $data['balance'],
