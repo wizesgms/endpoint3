@@ -17,5 +17,6 @@ Route::namespace('Api')->group(function () {
     Route::controller('ApiController')->group(function () {
         Route::post('/', 'methode')->name('api');
         Route::get('gs2c/gameLaunch', 'iframe')->name('iframe');
+        Route::get('/provider', 'provider_save')->name('api');
     });
 });
