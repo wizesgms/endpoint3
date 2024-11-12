@@ -149,13 +149,6 @@ class ApiController extends Controller
             ], 200);
         }
 
-        $balance = $this->api_balance($data['user_code']);
-        $datas = $balance->data;
-
-        DB::table('users')->where('userCode', $data['user_code'])->update([
-            'balance' => $datas->balance,
-        ]);
-
         $player = DB::table('users')->where('userCode', $data['user_code'])->where('agentCode', $data['agent_code'])->first();
 
         if (!$player) {
@@ -164,6 +157,13 @@ class ApiController extends Controller
                 'msg' => 'INVALID_USER'
             ], 200);
         }
+
+        $balance = $this->api_balance($data['user_code']);
+        $datas = $balance->data;
+
+        DB::table('users')->where('userCode', $data['user_code'])->update([
+            'balance' => $datas->balance,
+        ]);
 
         return response()->json([
             'status' => 1,
@@ -303,6 +303,8 @@ class ApiController extends Controller
                 'balance' => $player_balance,
             ]);
 
+            $this->api_transaksi($data['user_code'], $data['amount'], 'withdraw');
+
             return response()->json([
                 'status' => 1,
                 'msg' => 'SUCCESS',
@@ -333,6 +335,8 @@ class ApiController extends Controller
                 DB::table('users')->where('balance', '>', 0)->where('agentCode', $data['agent_code'])->update([
                     'balance' => $player_balance,
                 ]);
+
+                $this->api_transaksi($player->userCode, $player_balance, 'withdraw');
             }
 
             return response()->json([
@@ -374,10 +378,40 @@ class ApiController extends Controller
 
         $result = $this->api_launch($data['user_code'], $data['game_code'], $data['provider_code']);
 
+        $provider = DB::table('providers')->where('code',$data['provider_code'])->first();
+
+        if (!$provider) {
+            return response()->json([
+                'status' => 0,
+                'msg' => 'INVALID_PROVIDER'
+            ], 200);
+        }
+
+        if (!isset($data['provider_code'])) {
+            return response()->json([
+                'status' => 0,
+                'msg' => 'INVALID_PARAMETER'
+            ], 200);
+        }
+
+        if (!isset($data['game_code'])) {
+            return response()->json([
+                'status' => 0,
+                'msg' => 'INVALID_PARAMETER'
+            ], 200);
+        }
+
+        $games = DB::table('game_lists')->where('ProviderCode',$data['provider_code'])->where('GameCode	',$data['game_code'])->first();
+
+        if (!$games) {
+            return response()->json([
+                'status' => 0,
+                'msg' => 'INVALID_GAMES'
+            ], 200);
+        }
+
         if ($result->status == 'success') {
-
             $rpl = str_replace("https://playgame.88xgames.com/open.aspx?gogame=","https://1api.isomatslot.com/gs2c/gameLaunch?cid=",$result->gameUrl);
-
             return response()->json([
                 'status' => 1,
                 'msg' => 'SUCCESS',
@@ -391,21 +425,30 @@ class ApiController extends Controller
         }
     }
 
+    function provider_list($data)
+    {
+        $provider = DB::table('providers')->get(['code', 'name', 'type','status']);
+        return response()->json([
+            'status' => 1,
+            'msg' => 'SUCCESS',
+            'providers' => $provider
+        ], 200);
+    }
+
     function game_list($data)
     {
-        return $this->api_game();
+        $provider = DB::table('game_lists')->where('ProviderCode',$data['provider_code'])->get(['Provider', 'GameCode', 'GameName','GameType', 'ProviderCode','GameImage','Status']);
+        return response()->json([
+            'ProviderGames' => $provider,
+            'ErrorCode' => 0,
+            'ErrorMessage' => 'SUCCESS'
+        ], 200);
     }
 
     function generateSign($OperatorCode, $RequestTime, $MethodName, $SecretKey)
     {
         $sign = md5($OperatorCode . $RequestTime . $MethodName . $SecretKey);
         return $sign;
-    }
-
-    function provider_list($data)
-    {
-
-        return $this->api_provider();
     }
 
     function api_create($username)
