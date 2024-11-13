@@ -401,7 +401,7 @@ class ApiController extends Controller
             ], 200);
         }
 
-        $games = DB::table('game_lists')->where('ProviderCode',$data['provider_code'])->where('GameCode	',$data['game_code'])->first();
+        $games = DB::table('game_lists')->where('ProviderCode',$data['provider_code'])->where('GameCode',$data['game_code'])->first();
 
         if (!$games) {
             return response()->json([
