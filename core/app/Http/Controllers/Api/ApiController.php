@@ -533,10 +533,11 @@ class ApiController extends Controller
     public function provider_save(Request $request)
     {
         $provider = DB::table('game_lists')->where('ProviderCode',$request->provider)->get(['Provider', 'GameCode', 'GameName','GameType', 'ProviderCode','GameImage','Status']);
-        $count = DB::table('game_lists')->count();
+        $count = DB::table('game_lists')->where('ProviderCode',$request->provider)->count();
         return response()->json([
             'ProviderGames' => $provider,
             'ErrorCode' => 0,
+            'total' => $count,
             'ErrorMessage' => 'SUCCESS'
         ], 200);
     }
