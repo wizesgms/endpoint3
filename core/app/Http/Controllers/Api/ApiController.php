@@ -530,27 +530,13 @@ class ApiController extends Controller
         return $randomString;
     }
 
-    public function provider_save()
+    public function provider_save(Request $request)
     {
-        $url = "https://api.88xgames.com/v2/GetGameList.aspx?agent_token=c3b52b25c5f6d7f036fb636816813506&agent_code=xwgv59Xj";
-        $result = $this->curl_get($url);
-        foreach ($result->games as $provider) {
-            DB::table('game_lists')->insert(
-                [
-                    'Provider' => $provider->provider,
-                    'GameName' => $provider->game_name,
-                    'GameCode' => $provider->game_code,
-                    'GameType' => $provider->game_type,
-                    'ProviderCode' => $provider->game_provider,
-                    'GameImage' => $provider->game_image,
-                    'Category' => 'Games',
-                    'Status' => $provider->game_status,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'updated_at' => date('Y-m-d H:i:s')
-                ]
-            );
-        }
-
-        return $result;
+        $provider = DB::table('game_lists')->where('ProviderCode',$request->provider)->get(['Provider', 'GameCode', 'GameName','GameType', 'ProviderCode','GameImage','Status']);
+        return response()->json([
+            'ProviderGames' => $provider,
+            'ErrorCode' => 0,
+            'ErrorMessage' => 'SUCCESS'
+        ], 200);
     }
 }
