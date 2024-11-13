@@ -378,7 +378,7 @@ class ApiController extends Controller
 
         $result = $this->api_launch($data['user_code'], $data['game_code'], $data['provider_code']);
 
-        $provider = DB::table('providers')->where('code',$data['provider_code'])->first();
+        $provider = DB::table('providers')->where('code', $data['provider_code'])->first();
 
         if (!$provider) {
             return response()->json([
@@ -401,7 +401,7 @@ class ApiController extends Controller
             ], 200);
         }
 
-        $games = DB::table('game_lists')->where('ProviderCode',$data['provider_code'])->where('GameCode',$data['game_code'])->first();
+        $games = DB::table('game_lists')->where('ProviderCode', $data['provider_code'])->where('GameCode', $data['game_code'])->first();
 
         if (!$games) {
             return response()->json([
@@ -411,7 +411,7 @@ class ApiController extends Controller
         }
 
         if ($result->status == 'success') {
-            $rpl = str_replace("https://playgame.88xgames.com/open.aspx?gogame=","https://1api.isomatslot.com/gs2c/gameLaunch?cid=",$result->gameUrl);
+            $rpl = str_replace("https://playgame.88xgames.com/open.aspx?gogame=", "https://1api.isomatslot.com/gs2c/gameLaunch?cid=", $result->gameUrl);
             return response()->json([
                 'status' => 1,
                 'msg' => 'SUCCESS',
@@ -427,7 +427,7 @@ class ApiController extends Controller
 
     function provider_list($data)
     {
-        $provider = DB::table('providers')->get(['code', 'name', 'type','status']);
+        $provider = DB::table('providers')->get(['code', 'name', 'type', 'status']);
         return response()->json([
             'status' => 1,
             'msg' => 'SUCCESS',
@@ -437,7 +437,7 @@ class ApiController extends Controller
 
     function game_list($data)
     {
-        $provider = DB::table('game_lists')->where('ProviderCode',$data['provider_code'])->get(['Provider', 'GameCode', 'GameName','GameType', 'ProviderCode','GameImage','Status']);
+        $provider = DB::table('game_lists')->where('ProviderCode', $data['provider_code'])->get(['Provider', 'GameCode', 'GameName', 'GameType', 'ProviderCode', 'GameImage', 'Status']);
         return response()->json([
             'ProviderGames' => $provider,
             'ErrorCode' => 0,
@@ -514,7 +514,7 @@ class ApiController extends Controller
     public function iframe(Request $request)
     {
         $url = "https://playgame.88xgames.com/open.aspx?gogame={$request->cid}";
-        return view('iframe',compact('url'));
+        return view('iframe', compact('url'));
     }
 
     function generateRandomString($length = 10)
@@ -532,13 +532,22 @@ class ApiController extends Controller
 
     public function provider_save(Request $request)
     {
-        $provider = DB::table('game_lists')->where('ProviderCode',$request->provider)->get(['Provider', 'GameCode', 'GameName','GameType', 'ProviderCode','GameImage','Status']);
-        $count = DB::table('game_lists')->where('ProviderCode',$request->provider)->count();
-        return response()->json([
-            'ProviderGames' => $provider,
-            'ErrorCode' => 0,
-            'total' => $count,
-            'ErrorMessage' => 'SUCCESS'
-        ], 200);
+        $provider = DB::table('providers')->get();
+
+        foreach ($provider as $providers) {
+            $total = DB::table('game_lists')->where('ProviderCode', $providers->code)->count();
+            $running = DB::table('game_lists')->where('ProviderCode', $providers->code)->where('status', 1)->count();
+            $check = DB::table('game_lists')->where('ProviderCode', $providers->code)->where('status', 1)->count();
+
+            DB::table('providers')
+                ->where('code', $providers->code)
+                ->update([
+                    'totalGames' => $total,
+                    'runningGames' => $running,
+                    'checkingGames' => $check,
+                ]);
+        }
+
+        return "success";
     }
 }
