@@ -303,8 +303,6 @@ class ApiController extends Controller
                 'balance' => $player_balance,
             ]);
 
-            $this->api_transaksi($data['user_code'], $data['amount'], 'withdraw');
-
             return response()->json([
                 'status' => 1,
                 'msg' => 'SUCCESS',
@@ -335,8 +333,6 @@ class ApiController extends Controller
                 DB::table('users')->where('balance', '>', 0)->where('agentCode', $data['agent_code'])->update([
                     'balance' => $player_balance,
                 ]);
-
-                $this->api_transaksi($player->userCode, $player_balance, 'withdraw');
             }
 
             return response()->json([
@@ -485,6 +481,14 @@ class ApiController extends Controller
     function api_launch($username, $game_code, $game_provider)
     {
         $url = "https://api.88xgames.com/v2/LaunchGame.aspx?agent_token=c3b52b25c5f6d7f036fb636816813506&agent_code=xwgv59Xj&username={$username}&game_type=SeamlessGame&game_code={$game_code}&game_provider={$game_provider}&lang=en";
+        return $this->curl_get($url);
+    }
+    
+    function getHistory($data)
+    {
+    
+       $user = $data['user_code'];
+        $url = "https://api.88xgames.com/v2/GetHistoryLog.aspx?agent_token=c3b52b25c5f6d7f036fb636816813506&agent_code=xwgv59Xj&username={$user}&type=slot";
         return $this->curl_get($url);
     }
 
