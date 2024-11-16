@@ -89,6 +89,92 @@ class ApiController extends Controller
         }
     }
 
+    function callbacktb($data)
+    {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $method = $data['cmd'];
+
+        switch ($method) {
+            case 'getBalance':
+                return $this->getBalancetb($data);
+                break;
+            case 'writeBet':
+                return $this->writeBet($data);
+                break;
+            default:
+                abort(404);
+        }
+    }
+
+    function getBalancetb($data)
+    {
+        $player = DB::table('users')->where('userCode', $data['login'])->first();
+
+        if (!$player) {
+            return response()->json([
+                'status' => 'fail',
+                'error' => 'user_not_found'
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'error' => '',
+            'login' => $data['login'],
+            'balance' => $player->balance,
+            'currency' => 'USD'
+        ], 200);
+    }
+
+    function writeBet($data)
+    {
+        $player = DB::table('users')->where('userCode', $data['login'])->first();
+
+        if (!$player) {
+            return response()->json([
+                'status' => 'fail',
+                'error' => 'user_not_found'
+            ], 200);
+        }
+
+        if ($player->balance < $data['bet']) {
+            return response()->json([
+                'status' => 'fail',
+                'error' => 'fail_balance'
+            ], 200);
+        }
+
+        $result_balance = $player->balance - $data['bet'] + $data['win'];
+
+        DB::table('users')->where('userCode', $data['login'])->update([
+            'balance' => $result_balance,
+        ]);
+
+
+        DB::table('trans_bet')->insert([
+            'sessionId' => $data['sessionId'],
+            'bet' => $data['bet'],
+            'win' => $data['win'],
+            'userCode' => $data['login'],
+            'tradeId' => $data['tradeId'],
+            'betInfo' => $data['betInfo'],
+            'gameId' => $data['gameId'],
+            'matrix' => $data['matrix'],
+            'WinLines' => $data['WinLines'],
+            'updatedAt' => date("Y-m-d H:i:s"),
+            'createdAt' => date("Y-m-d H:i:s")
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'error' => '',
+            'login' => $data['login'],
+            'balance' => $result_balance,
+            'currency' => 'USD',
+            'operationId' => rand(3, 10)
+        ], 200);
+    }
+
     function PlayerAccountCreate($data)
     {
         if (!$data['user_code']) {
@@ -123,13 +209,21 @@ class ApiController extends Controller
             'createdAt' => date("Y-m-d H:i:s")
         ]);
 
-        $this->api_create($data['user_code']);
-
         return response()->json([
             'status' => 1,
             'msg' => 'SUCCESS',
             'user_code' => $data['user_code'],
             'user_balance' => 0
+        ], 200);
+    }
+
+    function getHistory($data)
+    {
+        $games = DB::table('trans_bet')->get();
+        return response()->json([
+            'status' => 1,
+            'msg' => 'SUCCESS',
+            'data' => $games
         ], 200);
     }
 
@@ -157,13 +251,6 @@ class ApiController extends Controller
                 'msg' => 'INVALID_USER'
             ], 200);
         }
-
-        $balance = $this->api_balance($data['user_code']);
-        $datas = $balance->data;
-
-        DB::table('users')->where('userCode', $data['user_code'])->update([
-            'balance' => $datas->balance,
-        ]);
 
         return response()->json([
             'status' => 1,
@@ -218,8 +305,6 @@ class ApiController extends Controller
             'balance' => $player_balance,
         ]);
 
-        $this->api_transaksi($data['user_code'], $data['amount'], 'deposit');
-
         return response()->json([
             'status' => 1,
             'msg' => 'SUCCESS',
@@ -265,8 +350,6 @@ class ApiController extends Controller
         DB::table('users')->where('userCode', $data['user_code'])->where('agentCode', $data['agent_code'])->update([
             'balance' => $player_balance,
         ]);
-
-        $this->api_transaksi($data['user_code'], $data['amount'], 'withdraw');
 
         return response()->json([
             'status' => 1,
@@ -371,47 +454,50 @@ class ApiController extends Controller
             ], 200);
         }
 
+        $postArray = [
+            'hall' => '3205954', 
+            'key' => '3205954',
+            'login' => $data['user_code'],
+            'gameId' => $data['game_code'],
+            'cmd' => 'openGame',
+            'demo' => '0',
+            'domain' => 'https://domain.com/',
+            'cdnUrl' => '',
+            'exitUrl' => 'https://panel.isomatslot.com/',
+            'language' => 'en'
+        ];
+        $jsonData = json_encode($postArray);
 
-        $result = $this->api_launch($data['user_code'], $data['game_code'], $data['provider_code']);
 
-        $provider = DB::table('providers')->where('code', $data['provider_code'])->first();
+        $curl = curl_init();
 
-        if (!$provider) {
-            return response()->json([
-                'status' => 0,
-                'msg' => 'INVALID_PROVIDER'
-            ], 200);
-        }
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://tbs2api.aslot.net/API/openGame/',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $jsonData,
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json'
+            ),
+        ));
 
-        if (!isset($data['provider_code'])) {
-            return response()->json([
-                'status' => 0,
-                'msg' => 'INVALID_PARAMETER'
-            ], 200);
-        }
+        $response = curl_exec($curl);
 
-        if (!isset($data['game_code'])) {
-            return response()->json([
-                'status' => 0,
-                'msg' => 'INVALID_PARAMETER'
-            ], 200);
-        }
+        curl_close($curl);
 
-        $games = DB::table('game_lists')->where('ProviderCode', $data['provider_code'])->where('GameCode', $data['game_code'])->first();
+        $result = json_decode($response);
 
-        if (!$games) {
-            return response()->json([
-                'status' => 0,
-                'msg' => 'INVALID_GAMES'
-            ], 200);
-        }
-
-        if ($result->status == 'success') {
-            $rpl = str_replace("https://playgame.88xgames.com/open.aspx?gogame=", "https://1api.isomatslot.com/gs2c/gameLaunch?cid=", $result->gameUrl);
+        if ($result['status'] == 'success') {
+            $games = $result['content']['game'];
             return response()->json([
                 'status' => 1,
                 'msg' => 'SUCCESS',
-                'launch_url' => $rpl
+                'launch_url' => $games['url']
             ], 200);
         } else {
             return response()->json([
@@ -421,24 +507,42 @@ class ApiController extends Controller
         }
     }
 
-    function provider_list($data)
-    {
-        $provider = DB::table('providers')->get(['code', 'name', 'type', 'status']);
-        return response()->json([
-            'status' => 1,
-            'msg' => 'SUCCESS',
-            'providers' => $provider
-        ], 200);
-    }
-
     function game_list($data)
     {
-        $provider = DB::table('game_lists')->where('ProviderCode', $data['provider_code'])->get(['Provider', 'GameCode', 'GameName', 'GameType', 'ProviderCode', 'GameImage', 'Status']);
-        return response()->json([
-            'ProviderGames' => $provider,
-            'ErrorCode' => 0,
-            'ErrorMessage' => 'SUCCESS'
-        ], 200);
+        $postArray = [
+            'hall' => '3205954', 
+            'key' => '3205954',
+            'cmd' => 'gamesList',
+            'cdnUrl' => '',
+            'img' => 'game_img_2'
+        ];
+        $jsonData = json_encode($postArray);
+
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://tbs2api.aslot.net/API/',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $jsonData,
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json'
+            ),
+        ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+
+        $result = json_decode($response);
+
+        return $result;
     }
 
     function generateSign($OperatorCode, $RequestTime, $MethodName, $SecretKey)
@@ -481,14 +585,6 @@ class ApiController extends Controller
     function api_launch($username, $game_code, $game_provider)
     {
         $url = "https://api.88xgames.com/v2/LaunchGame.aspx?agent_token=c3b52b25c5f6d7f036fb636816813506&agent_code=xwgv59Xj&username={$username}&game_type=SeamlessGame&game_code={$game_code}&game_provider={$game_provider}&lang=en";
-        return $this->curl_get($url);
-    }
-    
-    function getHistory($data)
-    {
-    
-       $user = $data['user_code'];
-        $url = "https://api.88xgames.com/v2/GetHistoryLog.aspx?agent_token=c3b52b25c5f6d7f036fb636816813506&agent_code=xwgv59Xj&username={$user}&type=slot";
         return $this->curl_get($url);
     }
 
