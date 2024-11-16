@@ -89,7 +89,7 @@ class ApiController extends Controller
         }
     }
 
-    function callbacktb($data)
+   public function callbacktb()
     {
         $data = json_decode(file_get_contents('php://input'), true);
         $method = $data['cmd'];
