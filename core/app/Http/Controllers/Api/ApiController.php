@@ -949,8 +949,8 @@ class ApiController extends Controller
 
         if (is_numeric($games_check->game_id)) {
             $postArray = [
-                'hall' => '3206004',
-                'key' => '3206004',
+                'hall' => '3205954',
+                'key' => '3205954',
                 'login' => $data['user_code'],
                 'gameId' => $games_check->game_id,
                 'cmd' => 'openGame',
@@ -1160,8 +1160,8 @@ class ApiController extends Controller
     public function provider_save(Request $request)
     {
         $postArray = [
-            'hall' => '3206004',
-            'key' => '3206004',
+            'hall' => '3205954',
+            'key' => '3205954',
             'cmd' => 'gamesList',
             'cdnUrl' => '',
             'img' => 'game_img_2'
