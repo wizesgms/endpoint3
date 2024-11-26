@@ -1000,8 +1000,8 @@ class ApiController extends Controller
                     'game_name' => $games_check->game_name,
                     'hash' => $hash,
                     'url' => $url,
-                    'updatedAt' => date("Y-m-d H:i:s"),
-                    'createdAt' => date("Y-m-d H:i:s")
+                    'updated_at' => date("Y-m-d H:i:s"),
+                    'created_at' => date("Y-m-d H:i:s")
                 ]);
 
                 $urls = 'https://'.$games_check->provider.'.isomatslot.com/GamesLobby?session='.$hash;
