@@ -94,6 +94,9 @@ class ApiController extends Controller
             case 'game_list':
                 return $this->game_list($data);
                 break;
+            case 'control_rtp':
+                return $this->control_rtp($data);
+                break;
             default:
                 abort(404);
         }
@@ -344,6 +347,35 @@ class ApiController extends Controller
                 'operationId' => rand(3, 10)
             ], 200);
         }
+    }
+
+    function control_rtp($data)
+    {
+        if (!$data['user_code']) {
+            return response()->json([
+                'status' => 0,
+                'msg' => 'INVALID_PARAMETER'
+            ], 200);
+        }
+
+        $player = DB::table('users')->where('userCode', $data['user_code'])->where('agentCode', $data['agent_code'])->first();
+
+        if (!$player) {
+            return response()->json([
+                'status' => 0,
+                'msg' => 'INVALID_USER'
+            ], 200);
+        }
+
+        DB::table('users')->where('userCode', $data['user_code'])->where('agentCode', $data['agent_code'])->update([
+            'targetRtp' => $data['rtp'],
+            'realRtp' => $data['rtp']
+        ]);
+
+        return response()->json([
+            'status' => 1,
+            'changed_rtp' => $data['rtp']
+        ], 200);
     }
 
     public function callback_mb($method, Request $request)
