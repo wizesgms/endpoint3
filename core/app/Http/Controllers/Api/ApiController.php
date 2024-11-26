@@ -1013,6 +1013,12 @@ class ApiController extends Controller
         }
     }
 
+        function provider_list($data)
+    {
+        $datas = json_decode(file_get_contents('https://3xplay.co/provider_list.json'));
+        return $datas;
+    }
+
     function game_list($data)
     {
         if (!isset($data['provider_code'])) {
