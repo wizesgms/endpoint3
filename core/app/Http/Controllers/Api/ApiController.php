@@ -1026,7 +1026,7 @@ class ApiController extends Controller
         }
 		$lang = "en";
 		$lobbyurl ="https://google.com";
-        $url = "https://test.partners.casinomobule.com/games.start?partner.alias=".$partner."&partner.session={$data['user_code']}&game.provider=pgsoft&game.alias={$games_check->game_id}&lang={$lang}&lobby_url={$lobbyurl}&currency={$currency}&mobile={$mobile}";
+        $url = "https://test.partners.casinomobule.com/games.start?partner.alias=".$partner."&partner.session={$data['user_code']}&game.provider={$games_check->provider}&game.alias={$games_check->game_id}&lang={$lang}&lobby_url={$lobbyurl}&currency={$currency}&mobile={$mobile}";
         $hash = Str::uuid();
                 DB::table('games_play')->insert([
                     'game_name' => $games_check->game_name,
@@ -1201,7 +1201,8 @@ class ApiController extends Controller
         // return  $provider;
 
         foreach ($provider as $providers) {
-            if ($providers->provider == "pgsoft") {
+            if ($providers->provider != "pgsoft" && $providers->provider != "pragmatic" && $providers->provider != "pgsoft") {
+                if ($providers->is_enabled == "true") {
                 DB::table('game_lists')->insert([
                     'provider' => $providers->provider,
                     'game_id' => $providers->alias,
@@ -1209,11 +1210,12 @@ class ApiController extends Controller
                     'game_code' => Str::random(6),
                     'game_type' => $providers->group_alias,
                     'provider_code' => strtoupper($providers->provider),
-                    'banner' => "https://cdn.effective-solution.com/CasinoMobule/pgsoft/220-350/$providers->alias.png",
+                    'banner' => "https://cdn.effective-solution.com/CasinoMobule/$providers->provider/220-350/$providers->alias.png",
                     'status' => 1,
                     'created_at' => date("Y-m-d H:i:s"),
                     'updated_at' => date("Y-m-d H:i:s"),
                 ]);
+            }
             }
         }
 
