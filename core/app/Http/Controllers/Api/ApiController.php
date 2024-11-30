@@ -859,7 +859,7 @@ class ApiController extends Controller
 
         $agentapi = DB::table('agents')->where('agentCode', $data['agent_code'])->first();
         
-        if ($agentapi->balance == 0)
+        if ($agentapi->balance == 0) {
                 'status' => 0,
                 'msg' => 'INSUFFICIENT_AGENT_FUNDS'
             ], 200);
