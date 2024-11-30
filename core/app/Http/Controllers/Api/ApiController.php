@@ -858,6 +858,12 @@ class ApiController extends Controller
         }
 
         $agentapi = DB::table('agents')->where('agentCode', $data['agent_code'])->first();
+        
+        if ($agentapi->balance == 0)
+                'status' => 0,
+                'msg' => 'INSUFFICIENT_AGENT_FUNDS'
+            ], 200);
+        }
 
         $apis = ApiProvider::first();
         $player = DB::table('users')->where('userCode', $data['user_code'])->where('agentCode', $data['agent_code'])->where('apiType', 1)->first();
