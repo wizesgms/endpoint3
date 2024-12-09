@@ -1199,25 +1199,23 @@ class ApiController extends Controller
 
         $result = json_decode($response);
 
-        $provider = $result->content->gameList;
+        $data = json_decode(file_get_contents('https://api.alphast0re.biz.id/v1/GetGameList?agent_token=ef8e546aff502e326cf3c1b7f925ebc5&agent_code=NNa32clz'));
 
-        $data = json_decode(file_get_contents('https://partners.casinomobule.com/games.list'));
-
-        $provider = $data->response;
+        $provider = $data->games;
 
         // return  $provider;
 
         foreach ($provider as $providers) {
-            if ($providers->provider != "pgsoft" && $providers->provider != "pragmatic" && $providers->provider != "pgsoft") {
+            if ($providers->provider != "PGSoft" && $providers->provider != "PragmaticPlay" && $providers->provider != "PGSoft") {
                 if ($providers->is_enabled == "true") {
                 DB::table('game_lists')->insert([
                     'provider' => $providers->provider,
-                    'game_id' => $providers->alias,
-                    'game_name' => $providers->title,
+                    'game_id' => $providers->game_code,
+                    'game_name' => $providers->game_name,
                     'game_code' => Str::random(6),
-                    'game_type' => $providers->group_alias,
+                    'game_type' => $providers->game_provider,
                     'provider_code' => strtoupper($providers->provider),
-                    'banner' => "https://cdn.effective-solution.com/CasinoMobule/$providers->provider/220-350/$providers->alias.png",
+                    'banner' => $providers->game_image,
                     'status' => 1,
                     'created_at' => date("Y-m-d H:i:s"),
                     'updated_at' => date("Y-m-d H:i:s"),
