@@ -1207,7 +1207,7 @@ class ApiController extends Controller
 
         foreach ($provider as $providers) {
             if ($providers->provider != "PGSoft" && $providers->provider != "PragmaticPlay" && $providers->provider != "PGSoft") {
-                if ($providers->is_enabled == "true") {
+                if ($providers->game_status == 1) {
                 DB::table('game_lists')->insert([
                     'provider' => $providers->provider,
                     'game_id' => $providers->game_code,
