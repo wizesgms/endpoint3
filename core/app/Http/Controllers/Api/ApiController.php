@@ -1174,12 +1174,12 @@ class ApiController extends Controller
                     'type' => $request->provider,
                     'endpoint' => Str::random(6),
                     'status' => 1,
-                    'config' => $request->provider
+                    'config' => $request->provider,
                     'totalGames' => $count,
                     'runningGames' => $count,
                     'checkingGames' => $count,
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s"),
+                    'createdAt' => date("Y-m-d H:i:s"),
+                    'updatedAt' => date("Y-m-d H:i:s"),
              ]);
 
         return "success";
