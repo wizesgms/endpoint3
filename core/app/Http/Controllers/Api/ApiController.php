@@ -1166,63 +1166,21 @@ class ApiController extends Controller
 
     public function provider_save(Request $request)
     {
-        $postArray = [
-            'hall' => '3205954',
-            'key' => '3205954',
-            'cmd' => 'gamesList',
-            'cdnUrl' => '',
-            'img' => 'game_img_2'
-        ];
-        $jsonData = json_encode($postArray);
-
-
-        $curl = curl_init();
-
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://tbs2api.aslot.net/API/',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => $jsonData,
-            CURLOPT_HTTPHEADER => array(
-                'Content-Type: application/json'
-            ),
-        ));
-
-        $response = curl_exec($curl);
-
-        curl_close($curl);
-
-        $result = json_decode($response);
-
-        $data = json_decode(file_get_contents('https://api.alphast0re.biz.id/v1/GetGameList?agent_token=ef8e546aff502e326cf3c1b7f925ebc5&agent_code=NNa32clz'));
-
-        $provider = $data->games;
-
-        // return  $provider;
-
-        foreach ($provider as $providers) {
-            if ($providers->provider != "PGSoft" && $providers->provider != "PragmaticPlay" && $providers->provider != "PGSoft") {
-                if ($providers->game_status == 1) {
-                DB::table('game_lists')->insert([
-                    'provider' => $providers->provider,
-                    'game_id' => $providers->game_code,
-                    'game_name' => $providers->game_name,
-                    'game_code' => Str::random(6),
-                    'game_type' => $providers->game_provider,
-                    'provider_code' => strtoupper($providers->provider),
-                    'banner' => $providers->game_image,
+    
+    $count = DB::table('game_lists')->where('provider_code', $request->provider)->count();
+        DB::table('providers')->insert([
+                    'code' => $request->provider,
+                    'name' => $request->provider,
+                    'type' => $request->provider,
+                    'endpoint' => Str::random(6),
                     'status' => 1,
+                    'config' => $request->provider
+                    'totalGames' => $count,
+                    'runningGames' => $count,
+                    'checkingGames' => $count,
                     'created_at' => date("Y-m-d H:i:s"),
                     'updated_at' => date("Y-m-d H:i:s"),
-                ]);
-            }
-            }
-        }
+             ]);
 
         return "success";
     }
