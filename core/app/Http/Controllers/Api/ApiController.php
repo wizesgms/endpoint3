@@ -1054,8 +1054,12 @@ class ApiController extends Controller
 
         function provider_list($data)
     {
-        $datas = json_decode(file_get_contents('https://3xplay.co/provider_list.json'));
-        return $datas;
+       $data = DB::table('providers')->get(['code','name','type','status']);
+        return response()->json([
+                'status' => 1,
+                'msg' => 'SUCCESS',
+                'providers' => $data
+            ], 200);
     }
 
     function game_list($data)
@@ -1178,8 +1182,8 @@ class ApiController extends Controller
                     'totalGames' => $count,
                     'runningGames' => $count,
                     'checkingGames' => $count,
-                    'createdAt' => date("Y-m-d H:i:s"),
-                    'updatedAt' => date("Y-m-d H:i:s"),
+                    'created_at' => date("Y-m-d H:i:s"),
+                    'updated_at' => date("Y-m-d H:i:s"),
              ]);
 
         return "success";
