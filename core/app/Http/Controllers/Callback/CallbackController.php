@@ -620,21 +620,28 @@ class CallbackController extends Controller
     
     $jsonData = json_encode($postArray);
 
-    $headerArray = ['Content-Type: application/json'];
-    
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $apis->url.'Seamless/LaunchGame');
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headerArray);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+$curl = curl_init();
 
-    $res = curl_exec($ch);
-    curl_close($ch);
-    
-    $result = json_decode($res);
-            
-            return $result;
+curl_setopt_array($curl, array(
+  CURLOPT_URL => $apis->url.'Seamless/LaunchGame',
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => '',
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 0,
+  CURLOPT_FOLLOWLOCATION => true,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => 'POST',
+  CURLOPT_POSTFIELDS => $jsonData,
+  CURLOPT_HTTPHEADER => array(
+    'Content-Type: application/json'
+  ),
+));
+
+$response = curl_exec($curl);
+
+curl_close($curl);
+return json_decode($response);
+
     }
 
     function generateSign($OperatorCode, $RequestTime, $MethodName, $SecretKey)
