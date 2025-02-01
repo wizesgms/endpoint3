@@ -564,7 +564,7 @@ class ApiController extends Controller
         return response()->json([
             'status' => 1,
             'msg' => 'SUCCESS',
-            'launch_url' => $launch->Url
+            'launch_url' => $launch
         ], 200);
 
 
