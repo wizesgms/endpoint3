@@ -587,93 +587,21 @@ class CallbackController extends Controller
         }
     }
 
-    public function launchGame(Request $request)
+   public function launchGame($GameType,$GameCode,$ProviderCode,$ext_player)
     {
-        if (!$request->agentcode) {
-            return response()->json(array(
-                'ErrorCode' => 500,
-                'ErrorMsg' => 'Error',
-                'Message' => 'AgentCode Cannot Be Null'
-            ), 500);
-        } elseif (!$request->signature) {
-            return response()->json(array(
-                'ErrorCode' => 500,
-                'ErrorMsg' => 'Error',
-                'Message' => 'Signature Cannot Be Null'
-            ), 500);
-        } elseif (!$request->playerid) {
-            return response()->json(array(
-                'ErrorCode' => 500,
-                'ErrorMsg' => 'Error',
-                'Message' => 'PlayerID Cannot Be Null'
-            ), 500);
-        } elseif (!$request->provider) {
-            return response()->json(array(
-                'ErrorCode' => 500,
-                'ErrorMsg' => 'Error',
-                'Message' => 'Provider Cannot Be Null'
-            ), 500);
-        } elseif (!$request->game_code) {
-            return response()->json(array(
-                'ErrorCode' => 500,
-                'ErrorMsg' => 'Error',
-                'Message' => 'GameCode Cannot Be Null'
-            ), 500);
-        } elseif (!$request->lobbyURL) {
-            return response()->json(array(
-                'ErrorCode' => 500,
-                'ErrorMsg' => 'Error',
-                'Message' => 'lobbyURL Cannot Be Null'
-            ), 500);
-        } elseif (!$request->game_type) {
-            return response()->json(array(
-                'ErrorCode' => 500,
-                'ErrorMsg' => 'Error',
-                'Message' => 'GameType Cannot Be Null'
-            ), 500);
-        }
-
-        $agentapi = AgentApi::where('agentcode', $request->agentcode)->first();
-        $player = UserPlayer::where('id', $request->playerid)->first();
-        $game = GameList::where('GameCode',$request->game_code)->where('GameType',$request->game_type)->first();
         $apis = ApiSeamles::first();
-        if (!$agentapi) {
-            return response()->json(array(
-                'ErrorCode' => 492,
-                'ErrorMsg' => 'Error',
-                'Message' => 'Invalid AgentCode'
-            ), 422);
-        } elseif ($request->signature !== $this->CheckSign($request->agentcode, "LaunchGame")) {
-            return response()->json(array(
-                'ErrorCode' => 487,
-                'ErrorMsg' => 'Error',
-                'Message' => 'Invalid Signature'
-            ), 500);
-        } elseif (!$game) {
-            return response()->json(array(
-                'ErrorCode' => 455,
-                'ErrorMsg' => 'Error',
-                'Message' => 'Games Not Available'
-            ), 500);
-        } elseif (!$player) {
-            return response()->json(array(
-                'ErrorCode' => 25,
-                'ErrMessage' => 'Error',
-                'Message' => 'Invalid PlayerID'
-            ), 422);
-        }
 
-        if ($request->game_type === 1) {
+        if ($GameCode != 0) {
             $response = json_decode(Http::post($apis->url.'Seamless/LaunchGame', [
                 'OperatorCode' => $apis->agentcode,
-                'MemberName' => $player->ext_player,
-                'Password' => $player->password,
-                'GameID' => $game->GameCode,
-                'ProductID' => $game->ProviderCode,
-                'GameType' => $request->GameType,
+                'MemberName' => $ext_player,
+                'Password' => $ext_player,
+                'GameID' => $GameCode,
+                'ProductID' => $ProviderCode,
+                'GameType' => $GameType,
                 'LanguageCode' => 1,
                 'Platform' => 0,
-                'OperatorLobbyURL' => $request->LobbyURL,
+                'OperatorLobbyURL' => '/',
                 'Sign' => $this->generateSign($apis->agentcode,date('YMdHms'),'launchgame',$apis->secretkey),
                 'RequestTime' => date('YMdHms'),
             ]));
@@ -682,16 +610,17 @@ class CallbackController extends Controller
         } else {
             $response = json_decode(Http::post($apis->url.'Seamless/LaunchGame', [
                 'OperatorCode' => $apis->agentcode,
-                'MemberName' => $player->ext_player,
-                'Password' => $player->password,
-                'ProductID' => $game->ProviderCode,
-                'GameType' => $request->GameType,
+                'MemberName' => $ext_player,
+                'Password' => $ext_player,
+                'ProductID' => $ProviderCode,
+                'GameType' => $GameType,
                 'LanguageCode' => 1,
                 'Platform' => 0,
-                'OperatorLobbyURL' => $request->LobbyURL,
+                'OperatorLobbyURL' => '/',
                 'Sign' => $this->generateSign($apis->agentcode,date('YMdHms'),'launchgame',$apis->secretkey),
                 'RequestTime' => date('YMdHms'),
             ]));
+            
             return $response;
         }
     }
