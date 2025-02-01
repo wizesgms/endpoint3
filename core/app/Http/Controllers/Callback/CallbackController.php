@@ -634,7 +634,7 @@ class CallbackController extends Controller
     
     $result = json_decode($res);
             
-            return $postArray;
+            return $result;
     }
 
     function generateSign($OperatorCode, $RequestTime, $MethodName, $SecretKey)
