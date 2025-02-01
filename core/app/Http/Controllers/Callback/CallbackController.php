@@ -591,24 +591,7 @@ class CallbackController extends Controller
     {
         $apis = ApiSeamles::first();
 
-        if ($GameCode != 0) {
-            $response = json_decode(Http::post($apis->url.'Seamless/LaunchGame', [
-                'OperatorCode' => $apis->agentcode,
-                'MemberName' => $ext_player,
-                'Password' => $ext_player,
-                'GameID' => $GameCode,
-                'ProductID' => $ProviderCode,
-                'GameType' => $GameType,
-                'LanguageCode' => 1,
-                'Platform' => 0,
-                'OperatorLobbyURL' => '/',
-                'Sign' => $this->generateSign($apis->agentcode,date('YMdHms'),'launchgame',$apis->secretkey),
-                'RequestTime' => date('YMdHms'),
-            ]));
-
-            return $response;
-        } else {
-            $response = json_decode(Http::post($apis->url.'Seamless/LaunchGame', [
+        $response = json_decode(Http::post($apis->url.'Seamless/LaunchGame', [
                 'OperatorCode' => $apis->agentcode,
                 'MemberName' => $ext_player,
                 'Password' => $ext_player,
@@ -622,7 +605,6 @@ class CallbackController extends Controller
             ]));
             
             return $response;
-        }
     }
 
     function generateSign($OperatorCode, $RequestTime, $MethodName, $SecretKey)
