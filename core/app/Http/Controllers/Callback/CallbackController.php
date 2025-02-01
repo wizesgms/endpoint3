@@ -621,7 +621,7 @@ class CallbackController extends Controller
                 'RequestTime' => date('YMdHms'),
             ]));
             
-            return $response;
+            return $ProviderCode;
         }
     }
 
