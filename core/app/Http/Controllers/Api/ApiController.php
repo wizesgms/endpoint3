@@ -559,7 +559,7 @@ class ApiController extends Controller
 
 
         $api = new CallbackController();
-        $launch = $api->launchGame($data['game_type'],0,$data['ProviderCode'],$data['user_code']);
+        $launch = $api->launchGame($data['game_type'],0,$data['provider_code'],$data['user_code']);
 
         return response()->json([
             'status' => 1,
