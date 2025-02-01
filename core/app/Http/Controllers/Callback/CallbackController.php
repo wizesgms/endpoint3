@@ -591,7 +591,21 @@ class CallbackController extends Controller
     {
         $apis = ApiSeamles::first();
 
-        $response = json_decode(Http::post($apis->url.'Seamless/LaunchGame', [
+        // $response = json_decode(Http::post($apis->url.'Seamless/LaunchGame', [
+        //         'OperatorCode' => $apis->agentcode,
+        //         'MemberName' => $ext_player,
+        //         'Password' => $ext_player,
+        //         'ProductID' => $ProviderCode,
+        //         'GameType' => $GameType,
+        //         'LanguageCode' => 1,
+        //         'Platform' => 0,
+        //         'OperatorLobbyURL' => '/',
+        //         'Sign' => $this->generateSign($apis->agentcode,date('YMdHms'),'launchgame',$apis->secretkey),
+        //         'RequestTime' => date('YMdHms'),
+        //     ]));
+
+
+        $postArray = [
                 'OperatorCode' => $apis->agentcode,
                 'MemberName' => $ext_player,
                 'Password' => $ext_player,
@@ -602,9 +616,25 @@ class CallbackController extends Controller
                 'OperatorLobbyURL' => '/',
                 'Sign' => $this->generateSign($apis->agentcode,date('YMdHms'),'launchgame',$apis->secretkey),
                 'RequestTime' => date('YMdHms'),
-            ]));
+            ];
+    
+    $jsonData = json_encode($postArray);
+
+    $headerArray = ['Content-Type: application/json'];
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $apis->url.'Seamless/LaunchGame');
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headerArray);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+
+    $res = curl_exec($ch);
+    curl_close($ch);
+    
+    $result = json_decode($res);
             
-            return $response;
+            return $result;
     }
 
     function generateSign($OperatorCode, $RequestTime, $MethodName, $SecretKey)
